@@ -11,6 +11,9 @@ const $messages = document.getElementById('messages')
 const messageTemplate = document.getElementById('message-template').innerHTML
 const locationMessageTemplate = document.getElementById('location-message-template').innerHTML
 
+// Options (ignoreQueryPrefix removes the ? at the start of query)
+const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
+
 socket.on('message', (message) => {
     const html = Mustache.render(messageTemplate, {
         message: message.text,
@@ -63,4 +66,11 @@ $sendLocationButton.addEventListener('click', () => {
             $sendLocationButton.removeAttribute('disabled')
         })
     })
+})
+
+socket.emit('join', { username, room }, (error) => {
+    if (error) {
+        alert(error)
+        location.href = '/'
+    }
 })
