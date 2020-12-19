@@ -16,6 +16,36 @@ const sidebarTemplate = document.getElementById('sidebar-template').innerHTML
 // Options (ignoreQueryPrefix removes the ? at the start of query)
 const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
 
+// Only want to autoscroll if user was already at bottom of window
+// This allows user to scroll up to review conversation without being
+// automatically scrolled back down, which would suck
+const autoscroll = () => {
+    // New message element
+    const $newMessage = $messages.lastElementChild
+
+    // Height of new message and its margin from CSS
+    const newMessageStyles = getComputedStyle($newMessage)
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+    const newMessageHeight = $newMessage.offsetHeight + newMessageMargin
+
+    // Visible height of messages window
+    const visibleHeight = $messages.offsetHeight
+
+    // Height of messages container
+    const containerHeight = $messages.scrollHeight
+
+    // How far have I scrolled? scrollTop is measured at top of scrollbar
+    const scrollOffset = $messages.scrollTop + visibleHeight
+
+    // Have to subtract newMessageHeight because this is done after
+    // new message element is added, but before any scrolling is done
+    if (containerHeight - newMessageHeight <= scrollOffset) {
+        // Scroll to the bottom
+        $messages.scrollTop = $messages.scrollHeight
+    }
+
+}
+
 socket.on('message', (message) => {
     const html = Mustache.render(messageTemplate, {
         username: message.username,
